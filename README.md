@@ -2,4 +2,4 @@
 
 This is an unbeatable game of tic tac toe
 
-It is coded using Python.
+It is coded using Python
