@@ -23,12 +23,12 @@ h1{
     cursor: pointer;
 }
 
-.X{
+.XO{
     font-size: 100px;
     /* border: 1px solid green; */
     text-align: center;
 }
-.X > span{
+.XO > span{
     /* border: 1px solid orange; */
     margin: auto;
    
