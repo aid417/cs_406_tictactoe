@@ -29,6 +29,7 @@ $(() => {
       squareDiv.appendChild(newXO);
       check_winners(x_values, "X")
       xo_val = !xo_val;
+     
     } else {
       newXO.innerHTML = "O";
       o_values.push(parseInt(event.target.id));
@@ -37,8 +38,8 @@ $(() => {
       squareDiv.appendChild(newXO);
       check_winners(o_values, "O")
       xo_val = !xo_val;
+     
     }
-   
    
   }
   function tictacbox() {
