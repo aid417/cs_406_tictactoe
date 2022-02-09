@@ -1,6 +1,6 @@
 $(() => {
-    console.log("hello world")
-    prompt("Do you want to be X or O? (type answer")
+    // console.log("hello world")
+    // prompt("Do you want to be X or O? (type answer")
     const tictactoebox = document.getElementsByClassName("box");
 function addX (event){
     
