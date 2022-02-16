@@ -29,6 +29,7 @@ $(() => {
   }
   // function to add either an x or an o depending on what is going on
   function addXO(event) {
+    // console.log(event)
     const newXO = document.createElement("span");
     if (xo_val == true) {
       newXO.innerHTML = "X";
@@ -37,8 +38,14 @@ $(() => {
       squareDiv.classList.add("XO");
       squareDiv.appendChild(newXO);
       remove_square(parseInt(event.target.id))
-      check_winners(x_values, "X")
-      xo_val = !xo_val;
+      setTimeout(() => { check_winners(x_values, "X") }, 500);
+      // check_winners(x_values, "X")
+      if(game_won == false){
+        setTimeout(() => { random_move() }, 500);
+      }
+     
+      
+      // xo_val = !xo_val;
      
     } else {
       newXO.innerHTML = "O";
@@ -48,6 +55,7 @@ $(() => {
       squareDiv.appendChild(newXO);
       remove_square(parseInt(event.target.id))
       check_winners(o_values, "O")
+      random_move()
       xo_val = !xo_val;
      
     }
@@ -84,5 +92,17 @@ $(() => {
     if(!alert(`${winner} won this round!`)){window.location.reload();}
     
 
+  }
+  function random_move(){
+    arr_index = Math.floor(Math.random() * available_squares.length);
+    const newXO = document.createElement("span");
+    newXO.innerHTML = "O";
+    o_values.push(available_squares[arr_index]);
+    const squareDiv = document.getElementById(available_squares[arr_index]);
+    squareDiv.classList.add("XO");
+    squareDiv.appendChild(newXO);
+    remove_square(available_squares[arr_index])
+    setTimeout(() => { check_winners(o_values, "O") }, 500);
+    // xo_val = !xo_val;
   }
 });
