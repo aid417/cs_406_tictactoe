@@ -18,6 +18,15 @@ $(() => {
     [0, 4, 8],
     [2, 4, 6],
   ];
+  let available_squares = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  function remove_square(elem){
+    for (let i = 0; i < available_squares.length; i++){
+      if (available_squares[i] == elem){
+        available_squares.splice(i, 1);
+      }
+    }
+    console.log(available_squares);
+  }
   // function to add either an x or an o depending on what is going on
   function addXO(event) {
     const newXO = document.createElement("span");
@@ -27,6 +36,7 @@ $(() => {
       const squareDiv = document.getElementById(event.target.id);
       squareDiv.classList.add("XO");
       squareDiv.appendChild(newXO);
+      remove_square(parseInt(event.target.id))
       check_winners(x_values, "X")
       xo_val = !xo_val;
      
@@ -36,6 +46,7 @@ $(() => {
       const squareDiv = document.getElementById(event.target.id);
       squareDiv.classList.add("XO");
       squareDiv.appendChild(newXO);
+      remove_square(parseInt(event.target.id))
       check_winners(o_values, "O")
       xo_val = !xo_val;
      
