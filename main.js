@@ -1,7 +1,4 @@
 $(() => {
-//   import GameWinners from "./gamewinners";
-  // console.log("hello world")
-  // prompt("Do you want to be X or O? (type answer")
   const tictactoebox = document.getElementsByClassName("box");
   let xo_val = true;
   let x_values = [];
@@ -68,25 +65,34 @@ $(() => {
   }
   tictacbox();
   function check_winners(xo_arr, turn){
-      if(xo_arr.length >= 3){
-        for(const combination of winning_combos){
-            let winner = 0;
-           for(let i = 0; i < combination.length; i++){
-                for(let j = 0; j < xo_arr.length; j++){
-                    if(combination[i] == xo_arr[j]){
-                        winner += 1;
-                        if(winner == 3){
-                            game_won = true;
-                            game_winner = turn;
-                            announce_winner(turn);
-                            break;
-                        }
-                    }
-                }
-           }
+   
+      
+        if(xo_arr.length >= 3){
+          for(const combination of winning_combos){
+              let winner = 0;
+             for(let i = 0; i < combination.length; i++){
+                  for(let j = 0; j < xo_arr.length; j++){
+                      if(combination[i] == xo_arr[j]){
+                          winner += 1;
+                          if(winner == 3){
+                              game_won = true;
+                              game_winner = turn;
+                              announce_winner(turn);
+                              break;
+                          }
+                      }
+                  }
+             }
+          }
         }
-      }
+      
+        if(available_squares.length == 0 && game_won == false){
+          announce_tie()
+        }
     
+  }
+  function announce_tie(){
+    if(!alert('The game was tied!')){window.location.reload();}
   }
   function announce_winner(winner){
     if(!alert(`${winner} won this round!`)){window.location.reload();}
