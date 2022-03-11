@@ -7,7 +7,7 @@ $(() => {
   let game_winner = null;
   let taken_squares = [];
 
-  var turnCount = 0;  
+  let turnCount = 0;  
   const winning_combos = [
     [0, 1, 2],
     [3, 4, 5],
@@ -25,11 +25,12 @@ $(() => {
         available_squares.splice(i, 1);
       }
     }
-    console.log(available_squares);
+    // console.log(available_squares);
   }
   // function to add either an x or an o depending on what is going on
   function addXO(event) {
     // console.log(event)
+    
     const newXO = document.createElement("span");
     if (xo_val == true) {
       newXO.innerHTML = "X";
@@ -41,6 +42,7 @@ $(() => {
       squareDiv.classList.add("XO");
       squareDiv.appendChild(newXO);
       remove_square(parseInt(event.target.id))
+      console.log(available_squares, 'x turn')
       setTimeout(() => { check_winners(x_values, "X") }, 500);
       // check_winners(x_values, "X")
       if(game_won == false){
@@ -118,6 +120,7 @@ $(() => {
   //   // xo_val = !xo_val;
   // }
   function computer_square(square_id){
+    console.log(square_id)
     const newXO = document.createElement("span");
       newXO.innerHTML = "O";
       o_values.push(square_id);
@@ -126,33 +129,44 @@ $(() => {
       squareDiv.appendChild(newXO);
       
       remove_square(square_id)
+      console.log(available_squares, 'o, comp turn')
       taken_squares.push(square_id)
      
       setTimeout(() => { check_winners(o_values, "O") }, 500);
   }
   function computerTurn(){
-    let next_move = null
-
+    let next_move = 'false'
+    // console.log(turnCount)
     if(turnCount == 1){
       next_move = computeFirstMove();
-      console.log(next_move)
-    }
-    if (next_move == null){
-      next_move = computeFinishingMove();
-    }
-
-    if (next_move == null) {
-      next_move = computeSavingMove();
-      console.log(next_move)
-    }
-    if (next_move == null)
-      next_move = predictTrappingMove();
-    
-    if (next_move == null) {
-      next_move = computeRandomMove();
-    }
-
    
+    
+    }
+    if(next_move == 'false'){
+      next_move = computeFinishingMove()
+      console.log(available_squares)
+    }
+
+    if (next_move == 'false') {
+    
+      next_move = computeSavingMove(o_values);
+      console.log(available_squares)
+    
+    }
+    if (next_move == 'false'){
+      
+      next_move = predictTrappingMove();
+      console.log(next_move, 'trapping')
+    }
+     
+    
+    if (next_move == 'false') {
+      console.log('random')
+      next_move = computeRandomMove();
+      console.log(next_move, 'random')
+    }
+
+   console.log(next_move)
     computer_square(next_move)
   }
   function computeFirstMove(){
@@ -214,51 +228,142 @@ function check_possible_win(squares_taken){
 
 }
 function computeFinishingMove(){
-    remainingMoves = available_squares
+    let remainingMoves = available_squares
    
 
     if(o_values.length >= 2){
-        for(square in available_squares){
+        for(i = 0; i < remainingMoves.length; i++){
+          square = remainingMoves[i]
           o_values.push(square)
+          remove_square(square)
           winning_move = check_possible_win(o_values)
           if(winning_move == true){
               o_values.pop()
+              available_squares.push(square)
+              available_squares = remainingMoves
               return square
           }
           else{
+            available_squares.push(square)
+            available_squares = remainingMoves
             o_values.pop()
           }
         }
-        return null;
+        available_squares = remainingMoves
+        return 'false' ;
     }
     else{
-        return null;
+      available_squares = remainingMoves
+      return 'false';
     }
 }
-function computeSavingMove(){
+function computeSavingMove(player_vals){
+  // console.log(available_squares, 'saving move')
   remainingMoves = available_squares
-  console.log(available_squares)
-    if(x_values.length >= 2){
+  // console.log(available_squares)
+    if(player_vals.length >= 2){
         for(let i = 0; i < available_squares.length; i ++){
-          square = available_squares[i]
+          square = remainingMoves[i]
         
-          x_values.push(parseInt(square))
-          winning_move = check_possible_win(x_values)
+          player_vals.push(parseInt(square))
+          remove_square(square)
+          winning_move = check_possible_win(player_vals)
     
           if(winning_move == true){
-              x_values.pop()
-           
+              player_vals.pop()
+              // console.log('true')
               return square
           }
           else{
-            x_values.pop()
+            player_vals.pop()
        
           }
         }
-        return null;
+        return 'false' ;
     }
     else{
-        return null;
+        return 'false';
     }
+}
+function predictTrappingMove(){
+
+  let backup = available_squares
+
+  var nextMove;
+  var moveFound;
+  // check to see if the opponent needs to play a saving move
+  for(i = 0; i < available_squares.length; i++){
+      o_values.push(backup[i])
+      curr_move = backup[i]
+      remove_square(backup[i])
+      
+      saving_move = computeSavingMove(x_values)
+      if(saving_move != 'false'){
+          x_values.push(saving_move)
+          if(checkTrap() == true){
+            x_values.pop()
+            available_squares.push(curr_move)
+            nextMove = curr_move;
+            break;
+          }
+          x_values.pop()
+          available_squares.push(curr_move)
+      
+          continue;
+      }
+  
+      // if there is no saving move needed
+      // current player is computer
+     else{
+       console.log(available_squares)
+       console.log(backup)
+       for(j = 0; j < backup.length; j++){
+         moveFound = true// now current move is player
+         x_values.push(backup[j])
+         curr_move = backup[j]
+         remove_square(available_squares[j])
+         if(checkTrap() == true){
+           moveFound = false
+           x_values.pop()
+           available_squares.push(curr_move)
+           break;
+         }
+         x_values.pop()
+          available_squares.push(curr_move)
+         
+
+       }
+     }
+     if(moveFound){
+       nextMove = backup[i];
+       break
+     }
+  }
+  available_squares = backup
+  // console.log(nextMove)
+  return nextMove
+}
+function checkTrap(){
+  let winningMoveCount = 0;
+  for(i = 0; i < available_squares.length; i++){
+    x_values.push(available_squares[i])
+    poss_win = check_possible_win(x_values)
+    if(poss_win == true){
+      winningMoveCount++;
+      x_values.pop()
+    }
+  }
+  if(winningMoveCount > 1){
+    return true
+  }
+  else{
+    return false
+  }
+}
+
+function computeRandomMove() {
+  // console.log('true')
+  move = available_squares[Math.floor(Math.random()*available_squares.length)]
+  return move
 }
 });
