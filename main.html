@@ -7,30 +7,66 @@
     <link rel="stylesheet" href="main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="main.js"></script>
-    <!-- <script src="gameplay.js"></script> -->
+
     <title>Unbeatable Tic Tac Toe</title>
 </head>
 <body>
-    <h1>Unbeatable Tic Tac Toe</h1>
-    <div id="board-div">
-        <div id="row1" class="row">
-            <div class="box" id="0">
-                
+    <div class="container">
+        <h1 class="welcome-text"> Unbeatable Tic Tac Toe </h1>
+   <br>
+        
+        </h1>
+        <div class="filler"></div>
+        <div class="turn-indicator">
+             <span class="current-player"></span>
+        </div>
+        <div class="filler"></div>
+        <div>
+            <input class="box"  id="0-0">
+            <input class="box"  id="0-1">
+            <input class="box"  id="0-2">
+        </div>
+
+        <div>
+            <input class="box" id="1-0">
+            <input class="box" id="1-1">
+            <input class="box" id="1-2">
+        </div>
+
+        <div>
+            <input class="box"  id="2-0">
+            <input class="box"  id="2-1">
+            <input class="box"  id="2-2">
+        </div>
+   
+        <div class="winner-screen fade-out">
+            <div class="overlay">
             </div>
-            <div class="box" id="1"></div>
-            <div class="box" id="2"></div>
+            <div class="message-box">
+                <div class="title">Game Over</div>
+                <div class="body">Player X Won!</div>
+                <button class="okay-button">New Game</button>
+            </div>
         </div>
-        <div id="row2" class="row">
-            <div class="box" id="3"></div>
-            <div class="box" id="4"></div>
-            <div class="box" id="5"></div>
-        </div>
-        <div id="row3" class="row">
-            <div class="box" id="6"></div>
-            <div class="box" id="7"></div>
-            <div class="box" id="8"></div>
-        </div>
+
     </div>
+
+    <!-- Loader -->
+
+     <div class="loader-overlay">
+            <div class="lds-grid">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+    </div> 
+
    
 </body>
 </html>

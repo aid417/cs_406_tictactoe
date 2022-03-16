@@ -1,369 +1,351 @@
-$(() => {
-  const tictactoebox = document.getElementsByClassName("box");
-  let xo_val = true;
-  let x_values = [];
-  let o_values = [];
-  let game_won = false;
-  let game_winner = null;
-  let taken_squares = [];
-
-  let turnCount = 0;  
-  const winning_combos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  let available_squares = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-  function remove_square(elem){
-    for (let i = 0; i < available_squares.length; i++){
-      if (available_squares[i] == elem){
-        available_squares.splice(i, 1);
-      }
-    }
-    // console.log(available_squares);
-  }
-  // function to add either an x or an o depending on what is going on
-  function addXO(event) {
-    // console.log(event)
-    
-    const newXO = document.createElement("span");
-    if (xo_val == true) {
-      newXO.innerHTML = "X";
+$(() =>{
+  var currentPlayer = "X";
+  
+  var checkedBoxes = [];
+  
+  var turnCount = 0;
+  
+  
+  newGame();
+  document.querySelectorAll('.box').forEach((value, key) => {
+      value.addEventListener("click", () => {
+          onCheckBox(value);
+      });
+  });
+  
+  
+  
+  function onCheckBox(element) {
+      checkedBoxes.push({ box: element.id, player: currentPlayer });
+      checkElement(element);
       turnCount++;
-      console.log(turnCount)
-      x_values.push(parseInt(event.target.id));
-      taken_squares.push(parseInt(event.target.id))
-      const squareDiv = document.getElementById(event.target.id);
-      squareDiv.classList.add("XO");
-      squareDiv.appendChild(newXO);
-      remove_square(parseInt(event.target.id))
-      console.log(available_squares, 'x turn')
-      setTimeout(() => { check_winners(x_values, "X") }, 500);
-      // check_winners(x_values, "X")
-      if(game_won == false){
-        setTimeout(() => { computerTurn() }, 500);
+      var gameStatus = checkWinner();
+      switchPlayer();
+      if (turnCount % 2 == 1 && gameStatus != 'game over' && gameStatus != 'game drawn'  ){
+          computerPlays();
       }
-     
-      
-      // xo_val = !xo_val;
-     
-    } else {
-      newXO.innerHTML = "O";
-      o_values.push(parseInt(event.target.id));
-      const squareDiv = document.getElementById(event.target.id);
-      squareDiv.classList.add("XO");
-      squareDiv.appendChild(newXO);
-      remove_square(parseInt(event.target.id))
-      check_winners(o_values, "O")
-      computerTurn()
-      xo_val = !xo_val;
-     
-    }
-   
   }
-  function tictacbox() {
-    for (let i = 0; i < tictactoebox.length; i++) {
-      tictactoebox[i].addEventListener("click", addXO);
-    }
+  
+  function checkElement(element){
+      element.value = currentPlayer;
+      element.disabled = "disabled";
   }
-  tictacbox();
-  function check_winners(xo_arr, turn){
-   
-      
-        if(xo_arr.length >= 3){
-          for(const combination of winning_combos){
-              let winner = 0;
-             for(let i = 0; i < combination.length; i++){
-                  for(let j = 0; j < xo_arr.length; j++){
-                      if(combination[i] == xo_arr[j]){
-                          winner += 1;
-                          if(winner == 3){
-                              game_won = true;
-                              game_winner = turn;
-                              announce_winner(turn);
-                              break;
-                          }
-                      }
-                  }
-             }
+  
+  function onUncheckBox(element, isImplicit = false) {
+      checkedBoxes = checkedBoxes.filter(b => b.box != element.id);
+      if (!isImplicit) {
+          element.value = '';
+          element.removeAttribute("disabled");
+          turnCount--;
+          switchPlayer();
+      }
+  }
+  
+  function switchPlayer() {
+      currentPlayer = currentPlayer == "X" ? "O" : "X";
+      document.querySelector('.current-player').textContent = currentPlayer;
+  }
+  
+  
+  function checkWinner(isCheckOnly = false) {
+     
+      if (currentPlayer == "X") {
+          var xs = checkedBoxes.filter(item => {
+              return item.player == "X";
+          }).map(value => {
+              return { x: Number(value.box.split("-")[0]), y: Number(value.box.split("-")[1]) }
+          });
+  
+          return calculateScore(xs, isCheckOnly);
+      }
+      else if (currentPlayer == "O") {
+          var os = checkedBoxes.filter(item => {
+              return item.player == "O";
+          }).map(value => {
+              return { x: Number(value.box.split("-")[0]), y: Number(value.box.split("-")[1]) }
+          });
+  
+          return calculateScore(os, isCheckOnly);
+      }
+  
+  
+  }
+  
+  
+  function calculateScore(positions, isCheckOnly) {
+      console.log(positions)
+      if (positions.filter(i => { return i.x == i.y }).length == 3) {
+          if (!isCheckOnly)
+              showWinner();
+          return 'game over';
+      }
+  
+      if (positions.filter(i => { return (i.x == 0 && i.y == 2) || (i.x == 1 && i.y == 1) || (i.x == 2 && i.y == 0) }).length == 3) {
+          if (!isCheckOnly)
+              showWinner();
+          return 'game over';
+      }
+  
+      for (var i = 0; i < 3; i++) {
+          var consecutiveHorizontal = positions.filter(p => {
+              return p.x == i;
+          });
+          if (consecutiveHorizontal.length == 3) {
+              if (!isCheckOnly)
+                  showWinner();
+              return 'game over';
           }
-        }
+          var consecutiveVertical = positions.filter(p => {
+              return p.y == i;
+          });
+          if (consecutiveVertical.length == 3) {
+              if (!isCheckOnly)
+                  showWinner();
+              return 'game over';
+          }
+      }
+      if (positions.length == 5) {
+          if (!isCheckOnly)
+              showWinner(true);
+          return 'game drawn';
+      }
+      return 'game on';
+  }
+  
+  function clearBoard() {
+      document.querySelectorAll('.box').forEach((value, index) => {
+          value.value = '';
+          value.removeAttribute("disabled");
+          checkedBoxes = [];
+          turnCount = 0;
+      })
+  }
+  
+  function showWinner(noWinner = false) {
+  
+      if (noWinner) {
+          document.querySelector('.winner-screen .body').innerHTML = 'Tie';
+          document.querySelector('.winner-screen').classList.toggle('fade-in');
+          document.querySelector('.winner-screen').classList.toggle('fade-out');
+        ;
+          return;
+      }
+      else {
+          document.querySelector('.winner-screen .body').innerHTML = 'Player ' + currentPlayer + ' Won!';
+          document.querySelector('.winner-screen').classList.toggle('fade-in');
+          document.querySelector('.winner-screen').classList.toggle('fade-out');
+          document.querySelector('#score-' + currentPlayer).textContent = Number(document.querySelector('#score-' + currentPlayer).textContent) + 1;
+          return;
+      }
+  }
+  
+  
+  document.querySelectorAll('.okay-button').forEach((value, key) => {
+      value.addEventListener('click', () => {
+          newGame();
+      });
+  })
+  
+  function newGame() {
+      showLoader();
+      clearBoard();
+      document.querySelector('.winner-screen').classList.remove('fade-in');
+      document.querySelector('.winner-screen').classList.add('fade-out');
+      switchPlayer();
+      setTimeout(hideLoader, 500);
+  }
+  
+  function computerPlays() {
+      var nextBoxCoords;
+  
+      if(turnCount == 1){
+          nextBoxCoords = computeFirstMove();
+      }
+      if (!nextBoxCoords){
+          nextBoxCoords = computeFinishingMove();
+      }
+  
+      if (!nextBoxCoords) {
+          nextBoxCoords = computeSavingMove();
+      }
+      if (!nextBoxCoords)
+          nextBoxCoords = predictTrappingMove();
       
-        if(available_squares.length == 0 && game_won == false){
-          announce_tie()
-        }
-    
+      if (!nextBoxCoords) {
+          nextBoxCoords = computeRandomMove();
+      }
+  
+      var nextBox = document.querySelector(`[id='${nextBoxCoords}']`);
+      onCheckBox(nextBox);
   }
-  function announce_tie(){
-    if(!alert('The game was tied!')){window.location.reload();}
-  }
-  function announce_winner(winner){
-    if(!alert(`${winner} won this round!`)){window.location.reload();}
-    
-
-  }
-  // function random_move(){
-  //   arr_index = Math.floor(Math.random() * available_squares.length);
-  //   const newXO = document.createElement("span");
-  //   newXO.innerHTML = "O";
-  //   o_values.push(available_squares[arr_index]);
-  //   const squareDiv = document.getElementById(available_squares[arr_index]);
-  //   squareDiv.classList.add("XO");
-  //   squareDiv.appendChild(newXO);
-  //   remove_square(available_squares[arr_index])
-  //   setTimeout(() => { check_winners(o_values, "O") }, 500);
-  //   // xo_val = !xo_val;
-  // }
-  function computer_square(square_id){
-    console.log(square_id)
-    const newXO = document.createElement("span");
-      newXO.innerHTML = "O";
-      o_values.push(square_id);
-      const squareDiv = document.getElementById(square_id);
-      squareDiv.classList.add("XO");
-      squareDiv.appendChild(newXO);
-      
-      remove_square(square_id)
-      console.log(available_squares, 'o, comp turn')
-      taken_squares.push(square_id)
-     
-      setTimeout(() => { check_winners(o_values, "O") }, 500);
-  }
-  function computerTurn(){
-    let next_move = 'false'
-    // console.log(turnCount)
-    if(turnCount == 1){
-      next_move = computeFirstMove();
-   
-    
-    }
-    if(next_move == 'false'){
-      next_move = computeFinishingMove()
-      console.log(available_squares)
-    }
-
-    if (next_move == 'false') {
-    
-      next_move = computeSavingMove(o_values);
-      console.log(available_squares)
-    
-    }
-    if (next_move == 'false'){
-      
-      next_move = predictTrappingMove();
-      console.log(next_move, 'trapping')
-    }
-     
-    
-    if (next_move == 'false') {
-      console.log('random')
-      next_move = computeRandomMove();
-      console.log(next_move, 'random')
-    }
-
-   console.log(next_move)
-    computer_square(next_move)
-  }
+  
   function computeFirstMove(){
-    
-    var playedMove = taken_squares[0]
-    
-    var edgeMoves = [1, 3, 5, 7];
-    var cornerMoves = [0, 2, 6, 8];
-    var centerMove = [4];
-  
-    corner_move = (cornerMoves.find(m => m == playedMove))
-    
-    if(edgeMoves.find(m => m == playedMove)){
-    
-      return edgeMoveResponse(playedMove);
-    }
-      
-   if(corner_move == playedMove){
-      
-      move = 4
-      return move;
-    }
-     
-    if(centerMove.find(m => m == playedMove)){
-      return cornerMoves[Math.floor(Math.random()*cornerMoves.length)];
-    }
-
-      
+      var playedMove = checkedBoxes.map(b => b.box)[0];
+      var edgeMoves = ['0-1', '1-0', '1-2', '2-1'];
+      var cornerMoves = ['0-0', '0-2', '2-0', '2-2'];
+      var centerMove = ['1-1'];
+      if(edgeMoves.find(m => m == playedMove))
+          return edgeMoveResponse(playedMove);
+      else if(cornerMoves.find(m => m == playedMove))
+          return '1-1';
+      else if(centerMove.find(m => m == playedMove))
+          return cornerMoves[Math.floor(Math.random()*cornerMoves.length)];
   }
-
+  
   function edgeMoveResponse(playedMove){
+      if(playedMove == '1-2') 
+          return '0-2';
+      else if (playedMove == "0-1") 
+          return "0-0";
+      else if (playedMove == "1-0") 
+          return "2-0";
+      else if(playedMove == '2-1') 
+          return '2-0';
+  }
   
-    if(playedMove == 1) 
-        return 0;
-    else if (playedMove == 3) 
-        return 6;
-    else if (playedMove == 5) 
-        return 2;
-    else if(playedMove == 7) 
-        return 6;
-}
-function check_possible_win(squares_taken){
-  
-    for(const combination of winning_combos){
-        let winner = 0;
-       for(let i = 0; i < combination.length; i++){
-            for(let j = 0; j < squares_taken.length; j++){
-                if(combination[i] == squares_taken[j]){
-                    winner += 1;
-                    if(winner == 3){
-                      return true;
-                      
-                    }
-                }
-            }
-       }
-    }
-  
-
-}
-function computeFinishingMove(){
-    let remainingMoves = available_squares
-   
-
-    if(o_values.length >= 2){
-        for(i = 0; i < remainingMoves.length; i++){
-          square = remainingMoves[i]
-          o_values.push(square)
-          remove_square(square)
-          winning_move = check_possible_win(o_values)
-          if(winning_move == true){
-              o_values.pop()
-              available_squares.push(square)
-              available_squares = remainingMoves
-              return square
-          }
-          else{
-            available_squares.push(square)
-            available_squares = remainingMoves
-            o_values.pop()
-          }
-        }
-        available_squares = remainingMoves
-        return 'false' ;
-    }
-    else{
-      available_squares = remainingMoves
-      return 'false';
-    }
-}
-function computeSavingMove(player_vals){
-  // console.log(available_squares, 'saving move')
-  remainingMoves = available_squares
-  // console.log(available_squares)
-    if(player_vals.length >= 2){
-        for(let i = 0; i < available_squares.length; i ++){
-          square = remainingMoves[i]
-        
-          player_vals.push(parseInt(square))
-          remove_square(square)
-          winning_move = check_possible_win(player_vals)
+  function computeSavingMove() {
+      var remainingMoves = getRemainingMoves();
     
-          if(winning_move == true){
-              player_vals.pop()
-              // console.log('true')
-              return square
-          }
-          else{
-            player_vals.pop()
-       
-          }
-        }
-        return 'false' ;
-    }
-    else{
-        return 'false';
-    }
-}
-function predictTrappingMove(){
-
-  let backup = available_squares
-
-  var nextMove;
-  var moveFound;
-  // check to see if the opponent needs to play a saving move
-  for(i = 0; i < available_squares.length; i++){
-      o_values.push(backup[i])
-      curr_move = backup[i]
-      remove_square(backup[i])
+      switchPlayer();
       
-      saving_move = computeSavingMove(x_values)
-      if(saving_move != 'false'){
-          x_values.push(saving_move)
-          if(checkTrap() == true){
-            x_values.pop()
-            available_squares.push(curr_move)
-            nextMove = curr_move;
-            break;
+      var savingMoveCoords;
+      for (var move of remainingMoves) {
+          checkedBoxes.push({ box: move, player: currentPlayer });
+          var nextBox = document.querySelector(`[id='${move}']`)
+          if (checkWinner(true) == 'game over') { 
+              savingMoveCoords = move;
+              onUncheckBox(nextBox, true);
+              break;
           }
-          x_values.pop()
-          available_squares.push(curr_move)
-      
-          continue;
+          onUncheckBox(nextBox, true);
       }
+      switchPlayer();
+      if(savingMoveCoords){
+          console.log('Playing Saving Move')
+          return savingMoveCoords;
+      }
+  }
   
-      // if there is no saving move needed
-      // current player is computer
-     else{
-       console.log(available_squares)
-       console.log(backup)
-       for(j = 0; j < backup.length; j++){
-         moveFound = true// now current move is player
-         x_values.push(backup[j])
-         curr_move = backup[j]
-         remove_square(available_squares[j])
-         if(checkTrap() == true){
-           moveFound = false
-           x_values.pop()
-           available_squares.push(curr_move)
-           break;
-         }
-         x_values.pop()
-          available_squares.push(curr_move)
-         
-
-       }
-     }
-     if(moveFound){
-       nextMove = backup[i];
-       break
-     }
+  function computeFinishingMove() {
+      var remainingMoves = getRemainingMoves();
+      var finishingMoveCoords;
+      for (var move of remainingMoves) {
+          checkedBoxes.push({ box: move, player: currentPlayer });
+          var nextBox = document.querySelector(`[id='${move}']`)
+          if (checkWinner(true) == 'game over') {
+              finishingMoveCoords = move;
+              onUncheckBox(nextBox, true);
+              break;
+          }
+          onUncheckBox(nextBox, true);
+      }
+      if(finishingMoveCoords){
+          console.log('Playing Finishing Move')
+          return finishingMoveCoords;
+      }
+      else{
+          return '';
+      }
+      
   }
-  available_squares = backup
-  // console.log(nextMove)
-  return nextMove
-}
-function checkTrap(){
-  let winningMoveCount = 0;
-  for(i = 0; i < available_squares.length; i++){
-    x_values.push(available_squares[i])
-    poss_win = check_possible_win(x_values)
-    if(poss_win == true){
-      winningMoveCount++;
-      x_values.pop()
-    }
+  
+  function predictTrappingMove() {
+      var checkedBoxesBackup = checkedBoxes.slice();
+      var remainingMoves = getRemainingMoves();
+      var nextMove;
+      var moveFound;
+      for(var move of remainingMoves){
+          checkedBoxes.push({box: move, player: currentPlayer})
+          switchPlayer();
+  
+          //Check if the opponent needs to play a saving move
+  
+          var savingMove =  computeSavingMove();
+          if(savingMove){
+              checkedBoxes.push({box: savingMove, player: currentPlayer});
+              if(checkTrap() == 'no trap'){
+                  checkedBoxes.pop();
+                  switchPlayer();
+                  nextMove = move;
+                  break;
+              }
+              checkedBoxes.pop();
+              switchPlayer();
+              continue;
+          }
+  
+          //If no saving move is required, check each position
+          else{
+              
+              switchPlayer();
+              
+              for(var opponentMove of getRemainingMoves()){
+                  switchPlayer();
+                  moveFound = true;
+                  
+                  checkedBoxes.push({box: opponentMove, player: currentPlayer});
+                  if(checkTrap() == 'trapped'){
+                      moveFound = false;
+                      checkedBoxes.pop();
+                      switchPlayer();
+                      break;
+                  }
+                  checkedBoxes.pop();
+                  switchPlayer();
+              }
+          }
+  // potentially may need to add back in
+          checkedBoxes.pop();
+          if(moveFound){
+              nextMove = move;
+              break;
+          }
+      }
+      checkedBoxes = checkedBoxesBackup;
+      return nextMove;
   }
-  if(winningMoveCount > 1){
-    return true
+  
+  function checkTrap(){
+  
+      var boxes = getRemainingMoves();
+      var winningMoveCount = 0;
+      for(var freeMove of boxes){
+          console.log(currentPlayer)
+          checkedBoxes.push({box: freeMove, player: currentPlayer});
+          var result = checkWinner(true);
+          if(result == 'game over')
+              winningMoveCount++
+          checkedBoxes.pop();
+      }
+      if(winningMoveCount > 1){
+          return 'trapped';
+      }
+      else{
+          return 'no trap';
+      }
   }
-  else{
-    return false
+  
+  function computeRandomMove() {
+      var remainingMoves = getRemainingMoves();
+      return remainingMoves[Math.floor(Math.random()*remainingMoves.length)]
   }
-}
-
-function computeRandomMove() {
-  // console.log('true')
-  move = available_squares[Math.floor(Math.random()*available_squares.length)]
-  return move
-}
-});
+  
+  function getRemainingMoves() {
+      var allMoves = ['0-0', '0-1', '0-2',
+          '1-0', '1-1', '1-2',
+          '2-0', '2-1', '2-2',]
+      var playedMoves = checkedBoxes.map(b => b.box);
+      return allMoves.filter(m => !playedMoves.find(move => move == m));
+  }
+  
+  
+  
+  function showLoader(){
+      document.querySelector('.loader-overlay').style.display = 'block';
+  }
+  
+  function hideLoader(){
+      document.querySelector('.loader-overlay').style.display = 'none';
+  }
+  })
+  
